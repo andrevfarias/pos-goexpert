@@ -22,4 +22,4 @@ Os requisitos para cumprir este desafio são:
 - [X] O client.go terá que salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
 - [X] O endpoint necessário gerado pelo server.go para este desafio será: /cotacao e a porta a ser utilizada
       pelo servidor HTTP será a 8080.
-- [ ] Ao finalizar, envie o link do repositório para correção.
+- [X] Ao finalizar, envie o link do repositório para correção.
