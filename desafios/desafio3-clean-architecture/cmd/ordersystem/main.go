@@ -8,19 +8,18 @@ import (
 
 	graphql_handler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/devfullcycle/20-CleanArch/configs"
-	"github.com/devfullcycle/20-CleanArch/internal/event/handler"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/graph"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/grpc/pb"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/grpc/service"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/web/webserver"
-	"github.com/devfullcycle/20-CleanArch/pkg/events"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	// mysql
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/configs"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/event/handler"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/graph"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/grpc/pb"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/grpc/service"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/web/webserver"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/pkg/events"
 )
 
 func main() {
@@ -35,24 +34,34 @@ func main() {
 	}
 	defer db.Close()
 
-	rabbitMQChannel := getRabbitMQChannel()
+	fmt.Printf("Connecting to RabbitMQ on: %s:%s\n", configs.RabbitMQHost, configs.RabbitMQPort)
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%s/", configs.RabbitMQHost, configs.RabbitMQPort))
+	if err != nil {
+		panic(err)
+	}
+	rabbitMQChannel, err := conn.Channel()
+	if err != nil {
+		panic(err)
+	}
 
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("OrderCreated", &handler.OrderCreatedHandler{
 		RabbitMQChannel: rabbitMQChannel,
 	})
 
-	createOrderUseCase := NewCreateOrderUseCase(db, eventDispatcher)
-
-	webserver := webserver.NewWebServer(configs.WebServerPort)
+	webserver := webserver.NewWebServer(fmt.Sprintf(":%s", configs.WebServerPort))
 	webOrderHandler := NewWebOrderHandler(db, eventDispatcher)
-	webserver.AddHandler("/order", webOrderHandler.Create)
+	webserver.AddHandler(http.MethodPost, "/orders", webOrderHandler.Create)
+	webserver.AddHandler(http.MethodGet, "/orders", webOrderHandler.FindAll)
 	fmt.Println("Starting web server on port", configs.WebServerPort)
 	go webserver.Start()
 
+	createOrderUseCase := NewCreateOrderUseCase(db, eventDispatcher)
+	getOrdersUseCase := NewGetOrdersUseCase(db)
+
 	grpcServer := grpc.NewServer()
-	createOrderService := service.NewOrderService(*createOrderUseCase)
-	pb.RegisterOrderServiceServer(grpcServer, createOrderService)
+	OrderService := service.NewOrderService(*createOrderUseCase, *getOrdersUseCase)
+	pb.RegisterOrderServiceServer(grpcServer, OrderService)
 	reflection.Register(grpcServer)
 
 	fmt.Println("Starting gRPC server on port", configs.GRPCServerPort)
@@ -64,22 +73,11 @@ func main() {
 
 	srv := graphql_handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		CreateOrderUseCase: *createOrderUseCase,
+		GetOrdersUseCase:   *getOrdersUseCase,
 	}}))
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
 	fmt.Println("Starting GraphQL server on port", configs.GraphQLServerPort)
 	http.ListenAndServe(":"+configs.GraphQLServerPort, nil)
-}
-
-func getRabbitMQChannel() *amqp.Channel {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	if err != nil {
-		panic(err)
-	}
-	ch, err := conn.Channel()
-	if err != nil {
-		panic(err)
-	}
-	return ch
 }

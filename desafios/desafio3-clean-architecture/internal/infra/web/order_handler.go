@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/devfullcycle/20-CleanArch/internal/entity"
-	"github.com/devfullcycle/20-CleanArch/internal/usecase"
-	"github.com/devfullcycle/20-CleanArch/pkg/events"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/entity"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/usecase"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/pkg/events"
 )
 
 type WebOrderHandler struct {
@@ -41,6 +41,22 @@ func (h *WebOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	err = json.NewEncoder(w).Encode(output)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *WebOrderHandler) FindAll(w http.ResponseWriter, r *http.Request) {
+
+	findAllOrders := usecase.NewGetOrdersUseCase(h.OrderRepository)
+	output, err := findAllOrders.Execute(usecase.GetOrdersInputDTO{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = json.NewEncoder(w).Encode(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

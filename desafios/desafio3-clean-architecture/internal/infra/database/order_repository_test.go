@@ -2,9 +2,11 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"math/rand/v2"
 	"testing"
 
-	"github.com/devfullcycle/20-CleanArch/internal/entity"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/entity"
 	"github.com/stretchr/testify/suite"
 
 	// sqlite3
@@ -48,4 +50,33 @@ func (suite *OrderRepositoryTestSuite) TestGivenAnOrder_WhenSave_ThenShouldSaveO
 	suite.Equal(order.Price, orderResult.Price)
 	suite.Equal(order.Tax, orderResult.Tax)
 	suite.Equal(order.FinalPrice, orderResult.FinalPrice)
+}
+
+func (suite *OrderRepositoryTestSuite) TestWhenFindAll_ThenShouldReturnAllOrders() {
+	repo := NewOrderRepository(suite.Db)
+
+	ordersEmptyResult, err := repo.FindAll()
+	suite.NoError(err)
+
+	suite.Equal(0, len(ordersEmptyResult))
+
+	var orders []entity.Order
+	for i := 1; i <= 10; i++ {
+		order, err := entity.NewOrder("order"+fmt.Sprint(i), float64(rand.IntN(20))+rand.Float64(), float64(rand.IntN(20))+rand.Float64())
+		suite.NoError(err)
+		suite.NoError(order.CalculateFinalPrice())
+		repo.Save(order)
+		orders = append(orders, *order)
+	}
+
+	ordersResult, err := repo.FindAll()
+	suite.NoError(err)
+	suite.Equal(10, len(ordersResult))
+
+	for i := 0; i < 10; i++ {
+		suite.Equal(orders[i].ID, ordersResult[i].ID)
+		suite.Equal(orders[i].Price, ordersResult[i].Price)
+		suite.Equal(orders[i].Tax, ordersResult[i].Tax)
+		suite.Equal(orders[i].FinalPrice, ordersResult[i].FinalPrice)
+	}
 }

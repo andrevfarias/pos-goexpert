@@ -6,12 +6,12 @@ package main
 import (
 	"database/sql"
 
-	"github.com/devfullcycle/20-CleanArch/internal/entity"
-	"github.com/devfullcycle/20-CleanArch/internal/event"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/database"
-	"github.com/devfullcycle/20-CleanArch/internal/infra/web"
-	"github.com/devfullcycle/20-CleanArch/internal/usecase"
-	"github.com/devfullcycle/20-CleanArch/pkg/events"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/entity"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/event"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/database"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/infra/web"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/internal/usecase"
+	"github.com/andrefarias66/pos-goexpert/desafios/desafio3-clean-architecture/pkg/events"
 	"github.com/google/wire"
 )
 
@@ -39,6 +39,14 @@ func NewCreateOrderUseCase(db *sql.DB, eventDispatcher events.EventDispatcherInt
 		usecase.NewCreateOrderUseCase,
 	)
 	return &usecase.CreateOrderUseCase{}
+}
+
+func NewGetOrdersUseCase(db *sql.DB) *usecase.GetOrdersUseCase {
+	wire.Build(
+		setOrderRepositoryDependency,
+		usecase.NewGetOrdersUseCase,
+	)
+	return &usecase.GetOrdersUseCase{}
 }
 
 func NewWebOrderHandler(db *sql.DB, eventDispatcher events.EventDispatcherInterface) *web.WebOrderHandler {
