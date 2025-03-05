@@ -1,3 +1,27 @@
+## RateLimiter
+
+1. Por token de acesso enviando "API_KEY: <TOKEN>" no header da requisição
+2. Por endereço IP
+
+- Midleware que é injetado ao servidor web
+- Req. por segundo configurável
+- Tempo de bloqueio (após atingir o limite) configurável
+- Configuração via .env ou variáveis de ambiente
+- Configurações individuais para IP e token
+- Resposta quando limite excedido:
+  - Status: **429**
+  - Mensagem: **You have reached the maximum number of requests or actions allowed within a certain time frame**
+- Persistencia em Redis com troca simplificada de mecanismo de persistência
+- Separar a lógica do Limiter e do Middleware
+- Criar testes automatizados (Unitários e de integração) sob diferentes condições de carga
+- Criar Documentação explicando a utilização e Configuração
+- Utilizar Docker/Docker-compose para rodar e testar o projeto
+- Porta do servidor web: 8080
+
+---
+
+---
+
 ## Objetivo
 
 Desenvolver um rate limiter em Go que possa ser configurado para limitar o número máximo de requisições por segundo com base em um endereço IP específico ou em um token de acesso.
