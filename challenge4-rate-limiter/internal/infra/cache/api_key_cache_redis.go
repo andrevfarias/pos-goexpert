@@ -1,4 +1,4 @@
-package internal
+package cache
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	ratelimiter "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/rate-limiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
 )
 
 type RedisApiKeyCache struct {
@@ -39,7 +39,7 @@ func (r *RedisApiKeyCache) GetApiKey(apiKey string) (ratelimiter.ApiKey, error) 
 	}, nil
 }
 
-func (r *RedisApiKeyCache) InsertOrUpdateApiKey(apiKey *ratelimiter.ApiKey) error {
+func (r *RedisApiKeyCache) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
 	key := fmt.Sprintf("apiKey:%s", apiKey.Key)
 	return r.redisClient.Set(context.Background(), key, apiKey.RateLimit, 0).Err()
 }

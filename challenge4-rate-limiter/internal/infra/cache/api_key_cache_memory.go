@@ -1,19 +1,19 @@
-package internal
+package cache
 
 import (
 	"sync"
 
-	ratelimiter "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/rate-limiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
 )
 
 type InMemoryApiKeyCache struct {
-	apiKeys map[string]*ratelimiter.ApiKey
+	apiKeys map[string]ratelimiter.ApiKey
 	mu      sync.RWMutex
 }
 
 func NewInMemoryApiKeyCache() *InMemoryApiKeyCache {
 	return &InMemoryApiKeyCache{
-		apiKeys: make(map[string]*ratelimiter.ApiKey),
+		apiKeys: make(map[string]ratelimiter.ApiKey),
 	}
 }
 
@@ -25,16 +25,14 @@ func (r *InMemoryApiKeyCache) GetApiKey(key string) (ratelimiter.ApiKey, error) 
 	if !ok {
 		return ratelimiter.ApiKey{}, ratelimiter.ErrAPIKeyNotFound
 	}
-	apiKeyCopy := *apiKey
-	return apiKeyCopy, nil
+	return apiKey, nil
 }
 
-func (r *InMemoryApiKeyCache) InsertOrUpdateApiKey(apiKey *ratelimiter.ApiKey) error {
+func (r *InMemoryApiKeyCache) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	apiKeyCopy := *apiKey
-	r.apiKeys[apiKey.Key] = &apiKeyCopy
+	r.apiKeys[apiKey.Key] = apiKey
 	return nil
 }
 

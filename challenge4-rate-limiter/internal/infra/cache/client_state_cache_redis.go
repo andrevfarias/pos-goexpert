@@ -1,11 +1,11 @@
-package internal
+package cache
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	ratelimiter "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/rate-limiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -17,23 +17,23 @@ func NewRedisClientStateCache(redisClient *redis.Client) *RedisClientStateCache 
 	return &RedisClientStateCache{redisClient: redisClient}
 }
 
-func (r *RedisClientStateCache) GetClientState(clientID string, clientType ratelimiter.ClientType) (*ratelimiter.ClientState, error) {
+func (r *RedisClientStateCache) GetClientState(clientID string, clientType ratelimiter.ClientType) (ratelimiter.ClientState, error) {
 	key := fmt.Sprintf("state:%s:%s", clientType, clientID)
 	clientStateJson, err := r.redisClient.Get(context.Background(), key).Result()
 	if err == redis.Nil {
-		return nil, ratelimiter.ErrClientStateNotFound
+		return ratelimiter.ClientState{}, ratelimiter.ErrClientStateNotFound
 	}
 	if err != nil {
-		return nil, err
+		return ratelimiter.ClientState{}, err
 	}
 
 	var clientState ratelimiter.ClientState
 	err = json.Unmarshal([]byte(clientStateJson), &clientState)
 	if err != nil {
-		return nil, err
+		return ratelimiter.ClientState{}, err
 	}
 
-	return &clientState, nil
+	return clientState, nil
 }
 
 func (r *RedisClientStateCache) InsertOrUpdateClientState(clientID string, clientState ratelimiter.ClientState, clientType ratelimiter.ClientType) error {

@@ -53,7 +53,7 @@ O objetivo deste desafio é criar um rate limiter em Go que possa ser utilizado 
 
 [X] Todas as informações de "limiter” devem ser armazenadas e consultadas de um banco de dados Redis. Você pode utilizar docker-compose para subir o Redis.
 [X] Crie uma “strategy” que permita trocar facilmente o Redis por outro mecanismo de persistência.
-[ ] A lógica do limiter deve estar separada do middleware.
+[X] A lógica do limiter deve estar separada do middleware.
 
 ## Exemplos:
 
@@ -74,8 +74,8 @@ Teste seu rate limiter sob diferentes condições de carga para garantir que ele
 
 ## Entrega
 
-- O código-fonte completo da implementação.
-- Documentação explicando como o rate limiter funciona e como ele pode ser configurado.
-- Testes automatizados demonstrando a eficácia e a robustez do rate limiter.
-- Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
-- O servidor web deve responder na porta 8080.
+[ ] O código-fonte completo da implementação.
+[ ] Documentação explicando como o rate limiter funciona e como ele pode ser configurado.
+[ ] Testes automatizados demonstrando a eficácia e a robustez do rate limiter.
+[ ] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
+[X] O servidor web deve responder na porta 8080.
