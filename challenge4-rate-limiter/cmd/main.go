@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/configs"
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/middleware"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/internal"
+	ratelimiter "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/rate-limiter"
 
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
@@ -20,18 +21,39 @@ func main() {
 
 	r := chi.NewRouter()
 
-	rateLimiterConfig := middleware.RateLimiterConfig{
-		IPRateLimit: cfg.IpRateLimit,
-		APIKeyRateLimit: map[string]int{
-			"key1": 10,
-			"key2": 20,
-			"key3": 30,
-		},
-		BlockTime: time.Duration(cfg.BlockTimeSeconds) * time.Second,
+	// redisClient := redis.NewClient(&redis.Options{
+	// 	Addr:     cfg.RedisHost,
+	// 	Password: cfg.RedisPassword,
+	// 	DB:       cfg.RedisDB,
+	// })
+
+	// apiKeyCache := internal.NewRedisApiKeyCache(redisClient)
+	// clientStateCache := internal.NewRedisClientStateCache(redisClient)
+
+	apiKeyCache := internal.NewInMemoryApiKeyCache()
+	clientStateCache := internal.NewInMemoryClientStateCache()
+
+	for _, apiKey := range cfg.ApiKeysRateLimit {
+		token := &ratelimiter.ApiKey{
+			Key:       apiKey.Key,
+			RateLimit: apiKey.RateLimit,
+		}
+
+		err := apiKeyCache.InsertOrUpdateApiKey(token)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	rateLimiterConfig := ratelimiter.RateLimiterConfig{
+		IPRateLimit:      cfg.IpRateLimit,
+		BlockTime:        time.Duration(cfg.BlockTimeSeconds) * time.Second,
+		ClientStateCache: clientStateCache,
+		ApiKeyCache:      apiKeyCache,
 	}
 
 	r.Use(chi_middleware.RealIP)
-	r.Use(middleware.RateLimiter(rateLimiterConfig))
+	r.Use(ratelimiter.New(rateLimiterConfig))
 	r.Use(chi_middleware.Logger)
 	r.Use(chi_middleware.Recoverer)
 
