@@ -1,23 +1,23 @@
-package cache
+package redis
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter"
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisClientStateCache struct {
+type RedisClientStateStorage struct {
 	redisClient *redis.Client
 }
 
-func NewRedisClientStateCache(redisClient *redis.Client) *RedisClientStateCache {
-	return &RedisClientStateCache{redisClient: redisClient}
+func NewRedisClientStateStorage(redisClient *redis.Client) *RedisClientStateStorage {
+	return &RedisClientStateStorage{redisClient: redisClient}
 }
 
-func (r *RedisClientStateCache) GetClientState(clientID string, clientType ratelimiter.ClientType) (ratelimiter.ClientState, error) {
+func (r *RedisClientStateStorage) GetClientState(clientID string, clientType ratelimiter.ClientType) (ratelimiter.ClientState, error) {
 	key := fmt.Sprintf("state:%s:%s", clientType, clientID)
 	clientStateJson, err := r.redisClient.Get(context.Background(), key).Result()
 	if err == redis.Nil {
@@ -36,17 +36,19 @@ func (r *RedisClientStateCache) GetClientState(clientID string, clientType ratel
 	return clientState, nil
 }
 
-func (r *RedisClientStateCache) InsertOrUpdateClientState(clientID string, clientState ratelimiter.ClientState, clientType ratelimiter.ClientType) error {
-	key := fmt.Sprintf("state:%s:%s", clientType, clientID)
+func (r *RedisClientStateStorage) InsertOrUpdateClientState(clientID string, clientState ratelimiter.ClientState, clientType ratelimiter.ClientType) error {
+	clientState.WindowStart = clientState.WindowStart.UTC()
+	clientState.BlockUntil = clientState.BlockUntil.UTC()
 	clientStateJson, err := json.Marshal(clientState)
 	if err != nil {
 		return err
 	}
 
+	key := fmt.Sprintf("state:%s:%s", clientType, clientID)
 	return r.redisClient.Set(context.Background(), key, clientStateJson, 0).Err()
 }
 
-func (r *RedisClientStateCache) DeleteClientState(clientID string, clientType ratelimiter.ClientType) error {
+func (r *RedisClientStateStorage) DeleteClientState(clientID string, clientType ratelimiter.ClientType) error {
 	key := fmt.Sprintf("state:%s:%s", clientType, clientID)
 	return r.redisClient.Del(context.Background(), key).Err()
 }

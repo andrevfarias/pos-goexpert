@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -7,18 +7,18 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter"
 )
 
-type RedisApiKeyCache struct {
+type RedisApiKeyStorage struct {
 	redisClient *redis.Client
 }
 
-func NewRedisApiKeyCache(redisClient *redis.Client) *RedisApiKeyCache {
-	return &RedisApiKeyCache{redisClient: redisClient}
+func NewRedisApiKeyStorage(redisClient *redis.Client) *RedisApiKeyStorage {
+	return &RedisApiKeyStorage{redisClient: redisClient}
 }
 
-func (r *RedisApiKeyCache) GetApiKey(apiKey string) (ratelimiter.ApiKey, error) {
+func (r *RedisApiKeyStorage) GetApiKey(apiKey string) (ratelimiter.ApiKey, error) {
 	key := fmt.Sprintf("apiKey:%s", apiKey)
 	rateLimit, err := r.redisClient.Get(context.Background(), key).Result()
 	if err != nil {
@@ -39,12 +39,12 @@ func (r *RedisApiKeyCache) GetApiKey(apiKey string) (ratelimiter.ApiKey, error) 
 	}, nil
 }
 
-func (r *RedisApiKeyCache) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
+func (r *RedisApiKeyStorage) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
 	key := fmt.Sprintf("apiKey:%s", apiKey.Key)
 	return r.redisClient.Set(context.Background(), key, apiKey.RateLimit, 0).Err()
 }
 
-func (r *RedisApiKeyCache) DeleteApiKey(apiKey string) error {
+func (r *RedisApiKeyStorage) DeleteApiKey(apiKey string) error {
 	key := fmt.Sprintf("apiKey:%s", apiKey)
 	return r.redisClient.Del(context.Background(), key).Err()
 }

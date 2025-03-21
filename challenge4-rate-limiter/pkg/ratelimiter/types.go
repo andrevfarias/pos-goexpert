@@ -23,10 +23,10 @@ type ApiKey struct {
 }
 
 type RateLimiterConfig struct {
-	IPRateLimit      int
-	BlockTime        time.Duration
-	ClientStateCache ClientStateCache
-	ApiKeyCache      ApiKeyCache
+	IPRateLimit        int
+	BlockTime          time.Duration
+	ClientStateStorage ClientStateStorage
+	ApiKeyStorage      ApiKeyStorage
 }
 
 type ClientState struct {

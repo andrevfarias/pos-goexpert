@@ -2,31 +2,32 @@ package ratelimiter
 
 import (
 	"errors"
+	"net"
 	"time"
 )
 
 type rateLimiter struct {
-	IPRateLimit      int
-	BlockTime        time.Duration
-	ClientStateCache ClientStateCache
-	ApiKeyCache      ApiKeyCache
+	IPRateLimit        int
+	BlockTime          time.Duration
+	ClientStateStorage ClientStateStorage
+	ApiKeyStorage      ApiKeyStorage
 }
 
 func NewRateLimiter(config RateLimiterConfig) RateLimiterService {
 	return &rateLimiter{
-		IPRateLimit:      config.IPRateLimit,
-		BlockTime:        config.BlockTime,
-		ClientStateCache: config.ClientStateCache,
-		ApiKeyCache:      config.ApiKeyCache,
+		IPRateLimit:        config.IPRateLimit,
+		BlockTime:          config.BlockTime,
+		ClientStateStorage: config.ClientStateStorage,
+		ApiKeyStorage:      config.ApiKeyStorage,
 	}
 }
 
 func (rl *rateLimiter) IsIpAllowed(ip string) (bool, error) {
-	if ip == "" {
+	if ip == "" || net.ParseIP(ip) == nil {
 		return false, errors.New("cannot resolve origin")
 	}
 
-	ipClient, err := rl.ClientStateCache.GetClientState(ip, ClientTypes.IP)
+	ipClient, err := rl.ClientStateStorage.GetClientState(ip, ClientTypes.IP)
 	if err != nil {
 		if err != ErrClientStateNotFound {
 			return false, err
@@ -43,22 +44,18 @@ func (rl *rateLimiter) IsIpAllowed(ip string) (bool, error) {
 		return false, err
 	}
 
-	rl.ClientStateCache.InsertOrUpdateClientState(ip, ipClient, ClientTypes.IP)
+	rl.ClientStateStorage.InsertOrUpdateClientState(ip, ipClient, ClientTypes.IP)
 
 	return isAllowed, nil
 }
 
 func (rl *rateLimiter) IsApiKeyAllowed(apiKey string) (bool, error) {
-	token, err := rl.ApiKeyCache.GetApiKey(apiKey)
+	token, err := rl.ApiKeyStorage.GetApiKey(apiKey)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 
-	if token.Key == "" {
-		return false, ErrAPIKeyNotFound
-	}
-
-	clientState, err := rl.ClientStateCache.GetClientState(apiKey, ClientTypes.ApiKey)
+	clientState, err := rl.ClientStateStorage.GetClientState(apiKey, ClientTypes.ApiKey)
 	if err != nil {
 		if err != ErrClientStateNotFound {
 			return false, err
@@ -75,7 +72,7 @@ func (rl *rateLimiter) IsApiKeyAllowed(apiKey string) (bool, error) {
 		return false, err
 	}
 
-	rl.ClientStateCache.InsertOrUpdateClientState(apiKey, clientState, ClientTypes.ApiKey)
+	rl.ClientStateStorage.InsertOrUpdateClientState(apiKey, clientState, ClientTypes.ApiKey)
 
 	return isAllowed, nil
 }

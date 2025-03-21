@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/configs"
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/internal/infra/cache"
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter/middleware"
+	redisStorage "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/storage/redis"
 	"github.com/redis/go-redis/v9"
 
 	chi_middleware "github.com/go-chi/chi/middleware"
@@ -28,8 +29,8 @@ func main() {
 		DB:       cfg.RedisDB,
 	})
 
-	apiKeyCache := cache.NewRedisApiKeyCache(redisClient)
-	clientStateCache := cache.NewRedisClientStateCache(redisClient)
+	apiKeyStorage := redisStorage.NewRedisApiKeyStorage(redisClient)
+	clientStateStorage := redisStorage.NewRedisClientStateStorage(redisClient)
 
 	// apiKeyCache := cache.NewInMemoryApiKeyCache()
 	// clientStateCache := cache.NewInMemoryClientStateCache()
@@ -40,21 +41,21 @@ func main() {
 			RateLimit: apiKey.RateLimit,
 		}
 
-		err := apiKeyCache.InsertOrUpdateApiKey(token)
+		err := apiKeyStorage.InsertOrUpdateApiKey(token)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	rateLimiterConfig := ratelimiter.RateLimiterConfig{
-		IPRateLimit:      cfg.IpRateLimit,
-		BlockTime:        time.Duration(cfg.BlockTimeSeconds) * time.Second,
-		ClientStateCache: clientStateCache,
-		ApiKeyCache:      apiKeyCache,
+		IPRateLimit:        cfg.IpRateLimit,
+		BlockTime:          time.Duration(cfg.BlockTimeSeconds) * time.Second,
+		ClientStateStorage: clientStateStorage,
+		ApiKeyStorage:      apiKeyStorage,
 	}
 
 	limiter := ratelimiter.NewRateLimiter(rateLimiterConfig)
-	midleware := ratelimiter.NewRateLimiterMiddleware(limiter)
+	midleware := middleware.NewRateLimiterMiddleware(limiter)
 
 	r.Use(chi_middleware.RealIP)
 	r.Use(midleware.Handler)

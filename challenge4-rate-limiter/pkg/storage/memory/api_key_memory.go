@@ -1,23 +1,23 @@
-package cache
+package memory
 
 import (
 	"sync"
 
-	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/middleware/ratelimiter"
+	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter"
 )
 
-type InMemoryApiKeyCache struct {
+type MemoryApiKeyStorage struct {
 	apiKeys map[string]ratelimiter.ApiKey
 	mu      sync.RWMutex
 }
 
-func NewInMemoryApiKeyCache() *InMemoryApiKeyCache {
-	return &InMemoryApiKeyCache{
+func NewMemoryApiKeyStorage() *MemoryApiKeyStorage {
+	return &MemoryApiKeyStorage{
 		apiKeys: make(map[string]ratelimiter.ApiKey),
 	}
 }
 
-func (r *InMemoryApiKeyCache) GetApiKey(key string) (ratelimiter.ApiKey, error) {
+func (r *MemoryApiKeyStorage) GetApiKey(key string) (ratelimiter.ApiKey, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -28,7 +28,7 @@ func (r *InMemoryApiKeyCache) GetApiKey(key string) (ratelimiter.ApiKey, error) 
 	return apiKey, nil
 }
 
-func (r *InMemoryApiKeyCache) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
+func (r *MemoryApiKeyStorage) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -36,7 +36,7 @@ func (r *InMemoryApiKeyCache) InsertOrUpdateApiKey(apiKey ratelimiter.ApiKey) er
 	return nil
 }
 
-func (r *InMemoryApiKeyCache) DeleteApiKey(apiKey string) error {
+func (r *MemoryApiKeyStorage) DeleteApiKey(apiKey string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
