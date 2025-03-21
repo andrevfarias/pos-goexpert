@@ -8,6 +8,7 @@ import (
 	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/configs"
 	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter"
 	"github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/ratelimiter/middleware"
+	memoryStorage "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/storage/memory"
 	redisStorage "github.com/andrevfarias/go-expert/challenge4-rate-limiter/pkg/storage/redis"
 	"github.com/redis/go-redis/v9"
 
@@ -23,17 +24,23 @@ func main() {
 
 	r := chi.NewRouter()
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     cfg.RedisHost,
-		Password: cfg.RedisPassword,
-		DB:       cfg.RedisDB,
-	})
+	var apiKeyStorage ratelimiter.ApiKeyStorage
+	var clientStateStorage ratelimiter.ClientStateStorage
 
-	apiKeyStorage := redisStorage.NewRedisApiKeyStorage(redisClient)
-	clientStateStorage := redisStorage.NewRedisClientStateStorage(redisClient)
+	switch cfg.StorageType {
+	case "memory":
+		apiKeyStorage = memoryStorage.NewMemoryApiKeyStorage()
+		clientStateStorage = memoryStorage.NewMemoryClientStateStorage()
+	case "redis":
+		redisClient := redis.NewClient(&redis.Options{
+			Addr:     cfg.RedisHost,
+			Password: cfg.RedisPassword,
+			DB:       cfg.RedisDB,
+		})
 
-	// apiKeyCache := cache.NewInMemoryApiKeyCache()
-	// clientStateCache := cache.NewInMemoryClientStateCache()
+		apiKeyStorage = redisStorage.NewRedisApiKeyStorage(redisClient)
+		clientStateStorage = redisStorage.NewRedisClientStateStorage(redisClient)
+	}
 
 	for _, apiKey := range cfg.ApiKeysRateLimit {
 		token := ratelimiter.ApiKey{
