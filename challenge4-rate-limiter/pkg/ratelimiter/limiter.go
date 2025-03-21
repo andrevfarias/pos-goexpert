@@ -52,7 +52,7 @@ func (rl *rateLimiter) IsIpAllowed(ip string) (bool, error) {
 func (rl *rateLimiter) IsApiKeyAllowed(apiKey string) (bool, error) {
 	token, err := rl.ApiKeyStorage.GetApiKey(apiKey)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	clientState, err := rl.ClientStateStorage.GetClientState(apiKey, ClientTypes.ApiKey)

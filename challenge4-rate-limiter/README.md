@@ -76,6 +76,6 @@ Teste seu rate limiter sob diferentes condições de carga para garantir que ele
 
 [ ] O código-fonte completo da implementação.
 [ ] Documentação explicando como o rate limiter funciona e como ele pode ser configurado.
-[ ] Testes automatizados demonstrando a eficácia e a robustez do rate limiter.
-[ ] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
+[X] Testes automatizados demonstrando a eficácia e a robustez do rate limiter.
+[X] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
 [X] O servidor web deve responder na porta 8080.

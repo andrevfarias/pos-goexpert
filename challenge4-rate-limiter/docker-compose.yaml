@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: app
     ports:
       - 8080:8080
     env_file:
@@ -15,6 +16,7 @@ services:
 
   redis:
     image: redis:alpine
+    container_name: redis
     ports:
       - 6379:6379
     volumes:
@@ -25,5 +27,21 @@ services:
       timeout: 5s
       retries: 3
 
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+
+    ports:
+      - '6565:6565'
+    volumes:
+      - ./scripts/k6:/scripts
+    environment:
+      - K6_WEB_DASHBOARD=true
+    env_file:
+      - .env
+    profiles:
+      - test
+
 volumes:
   redis-data:
+    driver: local
