@@ -1,81 +1,99 @@
-## RateLimiter
+# Pós-Graduação Go Expert
 
-1. Por token de acesso enviando "API_KEY: <TOKEN>" no header da requisição
-2. Por endereço IP
+## Desafio 4 - Rate Limiter
 
-- Midleware que é injetado ao servidor web
-- Req. por segundo configurável
-- Tempo de bloqueio (após atingir o limite) configurável
-- Configuração via .env ou variáveis de ambiente
-- Configurações individuais para IP e token
-- Resposta quando limite excedido:
-  - Status: **429**
-  - Mensagem: **You have reached the maximum number of requests or actions allowed within a certain time frame**
-- Persistencia em Redis com troca simplificada de mecanismo de persistência
-- Separar a lógica do Limiter e do Middleware
-- Criar testes automatizados (Unitários e de integração) sob diferentes condições de carga
-- Criar Documentação explicando a utilização e Configuração
-- Utilizar Docker/Docker-compose para rodar e testar o projeto
-- Porta do servidor web: 8080
-
----
-
----
-
-## Objetivo
+### Objetivo
 
 Desenvolver um rate limiter em Go que possa ser configurado para limitar o número máximo de requisições por segundo com base em um endereço IP específico ou em um token de acesso.
 
-## Descrição
+### Descrição
 
 O objetivo deste desafio é criar um rate limiter em Go que possa ser utilizado para controlar o tráfego de requisições para um serviço web. O rate limiter deve ser capaz de limitar o número de requisições com base em dois critérios:
 
 1. Endereço IP
    O rate limiter deve restringir o número de requisições recebidas de um único endereço IP dentro de um intervalo de tempo definido.
 2. Token de Acesso
-   O rate limiter deve também poderá limitar as requisições baseadas em um token de acesso único, permitindo diferentes limites de tempo de expiração para diferentes tokens. O Token deve ser informado no header no seguinte formato:
+   O rate limiter deve também limitar as requisições baseadas em um token de acesso único, permitindo diferentes limites de taxa para diferentes tokens. O Token deve ser informado no header no seguinte formato:
 
-   - API_KEY: <TOKEN>
+   - `API_KEY: <TOKEN>`
 
-   As configurações de limite do token de acesso devem se sobrepor as do IP. Ex: Se o limite por IP é de 10 req/s e a de um determinado token é de 100 req/s, o rate limiter deve utilizar as informações do token.
+   As configurações de limite do token de acesso devem se sobrepor às do IP. Ex: Se o limite por IP é de 10 req/s e a de um determinado token é de 100 req/s, o rate limiter deve utilizar as informações do token.
 
-## Requisitos
+### Requisitos
 
-[X] O rate limiter deve poder trabalhar como um middleware que é injetado ao servidor web
-[X] O rate limiter deve permitir a configuração do número máximo de requisições permitidas por segundo.
-[X] O rate limiter deve ter ter a opção de escolher o tempo de bloqueio do IP ou do Token caso a quantidade de requisições tenha sido excedida.
-[X] As configurações de limite devem ser realizadas via variáveis de ambiente ou em um arquivo “.env” na pasta raiz.
-[X] Deve ser possível configurar o rate limiter tanto para limitação por IP quanto por token de acesso.
-[X] O sistema deve responder adequadamente quando o limite é excedido:
+- [x] O rate limiter deve poder trabalhar como um middleware que é injetado ao servidor web
+- [x] O rate limiter deve permitir a configuração do número máximo de requisições permitidas por segundo
+- [x] O rate limiter deve ter a opção de escolher o tempo de bloqueio do IP ou do Token caso a quantidade de requisições tenha sido excedida
+- [x] As configurações de limite devem ser realizadas via variáveis de ambiente ou em um arquivo ".env" na pasta raiz
+- [x] Deve ser possível configurar o rate limiter tanto para limitação por IP quanto por token de acesso
+- [x] O sistema deve responder adequadamente quando o limite é excedido:
+  - Código HTTP: 429
+  - Mensagem: "You have reached the maximum number of requests or actions allowed within a certain time frame"
+- [x] Todas as informações de "limiter" devem ser armazenadas e consultadas de um banco de dados Redis
+- [x] Possui uma "strategy" que permite trocar facilmente o Redis por outro mecanismo de persistência
+- [x] A lógica do limiter está separada do middleware
 
-- Código HTTP: 429
-- Mensagem: you have reached the maximum number of requests or actions allowed within a certain time frame
+### Requisitos técnicos
 
-[X] Todas as informações de "limiter” devem ser armazenadas e consultadas de um banco de dados Redis. Você pode utilizar docker-compose para subir o Redis.
-[X] Crie uma “strategy” que permita trocar facilmente o Redis por outro mecanismo de persistência.
-[X] A lógica do limiter deve estar separada do middleware.
+- Docker e Docker Compose
 
-## Exemplos:
+### Configuração
 
-### Limitação por IP
+O Rate Limiter é configurado através do arquivo `.env` na raiz do projeto:
 
-Suponha que o rate limiter esteja configurado para permitir no máximo 5 requisições por segundo por IP. Se o IP 192.168.1.1 enviar 6 requisições em um segundo, a sexta requisição deve ser bloqueada.
+| Variável              | Descrição                                                | Exemplo                                                         |
+| --------------------- | -------------------------------------------------------- | --------------------------------------------------------------- |
+| `WEB_SERVER_PORT`     | Porta do servidor web                                    | `8080`                                                          |
+| `IP_RATE_LIMIT`       | Número máximo de requisições por segundo por IP          | `3`                                                             |
+| `API_KEYS_RATE_LIMIT` | Lista de tokens API e seus limites em formato JSON       | `[{"key":"key1","rate_limit":1},{"key":"key2","rate_limit":2}]` |
+| `BLOCK_TIME_SECONDS`  | Tempo de bloqueio em segundos quando o limite é excedido | `15`                                                            |
+| `STORAGE_TYPE`        | Tipo de armazenamento (redis ou memory)                  | `redis`                                                         |
+| `REDIS_HOST`          | Endereço do servidor Redis                               | `localhost:6379`                                                |
+| `REDIS_PASSWORD`      | Senha do Redis                                           | `123456`                                                        |
+| `REDIS_DB`            | Número do banco de dados Redis                           | `0`                                                             |
 
-### Limitação por Token
+### Utilização
 
-Se um token abc123 tiver um limite configurado de 10 requisições por segundo e enviar 11 requisições nesse intervalo, a décima primeira deve ser bloqueada.
+Na raiz do projeto, execute os seguintes comandos:
 
-Nos dois casos acima, as próximas requisições poderão ser realizadas somente quando o tempo total de expiração ocorrer.
-Ex: Se o tempo de expiração é de 5 minutos, determinado IP poderá realizar novas requisições somente após os 5 minutos.
+```bash
+# Construir a imagem
+make build
 
-## Dicas
+# Iniciar o serviço
+make start
 
-Teste seu rate limiter sob diferentes condições de carga para garantir que ele funcione conforme esperado em situações de alto tráfego.
+# O servidor estará disponível em http://localhost:8080
 
-## Entrega
+# Executar testes de carga
+make test
 
-[ ] O código-fonte completo da implementação.
-[ ] Documentação explicando como o rate limiter funciona e como ele pode ser configurado.
-[X] Testes automatizados demonstrando a eficácia e a robustez do rate limiter.
-[X] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
-[X] O servidor web deve responder na porta 8080.
+# Parar o serviço
+make stop
+```
+
+### Exemplos práticos
+
+```bash
+# requisição com limiter baseado em ip
+curl http://localhost:8080/
+# requisição com limiter baseado em api_key
+curl -H "API_KEY: key1" http://localhost:8080/
+```
+
+### Persistência de dados
+
+O sistema suporta dois mecanismos de armazenamento:
+
+1. **Redis** (padrão): Ideal para ambientes de produção e distribuídos
+2. **Memória**: Útil para desenvolvimento e testes locais
+
+A escolha é feita pela variável `STORAGE_TYPE` no arquivo `.env`.
+
+## Status da entrega
+
+- [x] O código-fonte completo da implementação
+- [x] Documentação explicando como o rate limiter funciona e como ele pode ser configurado
+- [x] Testes automatizados demonstrando a eficácia e a robustez do rate limiter
+- [x] Utilização de docker/docker-compose para testes da aplicação
+- [x] O servidor web responde na porta 8080
