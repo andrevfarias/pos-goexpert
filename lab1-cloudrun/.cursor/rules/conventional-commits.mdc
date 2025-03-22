@@ -1,0 +1,91 @@
+---
+description: Quando um novo commit for solicitado.
+globs: 
+alwaysApply: false
+---
+ # Padrões e práticas para Conventional Commits
+
+## Visão Geral
+
+O Conventional Commits é uma convenção que padroniza as mensagens de commit, tornando-as mais legíveis e significativas. Este padrão facilita a geração automática de changelogs e a análise do histórico do projeto.
+
+## Estrutura da Mensagem de Commit
+
+```
+<tipo>[escopo opcional]: <descrição>
+
+[corpo opcional]
+
+[rodapé(s) opcional(is)]
+```
+
+## Tipos Principais
+
+- **feat**: Uma nova funcionalidade
+- **fix**: Correção de um bug
+- **docs**: Alterações em documentação
+- **style**: Alterações que não afetam o código (espaçamento, formatação, etc)
+- **refactor**: Alterações no código que não corrigem bugs nem adicionam funcionalidades
+- **test**: Adição ou correção de testes
+- **chore**: Alterações no processo de build, ferramentas auxiliares, etc
+- **perf**: Alterações que melhoram a performance
+- **ci**: Alterações em configurações de CI/CD
+- **build**: Alterações que afetam o sistema de build ou dependências externas
+
+## Exemplos
+
+```
+feat: adiciona endpoint para consulta de CEP
+```
+
+```
+fix(api): corrige tratamento de erro no endpoint de temperatura
+```
+
+```
+docs: atualiza README com instruções de instalação
+
+Adiciona passos detalhados para configuração do ambiente de desenvolvimento
+e explica como executar os testes.
+```
+
+## Processo de Criação de Commits
+
+1. **Prepare as alterações**: Adicione os arquivos que deseja incluir no commit
+   ```
+   git add [arquivos]
+   ```
+
+2. **Inicie o commit sem a flag -m para editar a mensagem no editor**:
+   ```
+   git commit
+   ```
+
+3. **Verifique a mensagem antes de finalizar**:
+   - O editor será aberto com um arquivo temporário
+   - Edite a mensagem seguindo o padrão de conventional commits
+   - Salve e feche o arquivo para concluir o commit
+   - Caso precise fazer alterações adicionais, use `git commit --amend`
+
+4. **Verifique se a mensagem foi formatada corretamente**:
+   ```
+   git log -1 --pretty=format:"%B"
+   ```
+
+## Dicas para Mensagens Efetivas
+
+- **Seja específico**: A descrição deve explicar claramente o que mudou
+- **Use verbos no imperativo**: "adiciona", "corrige", "atualiza", etc
+- **Mantenha a primeira linha com até 72 caracteres**
+- **Separe o título do corpo com uma linha em branco**
+- **No corpo, use listas com hífens para detalhar as alterações**
+- **Explique o "por quê" da mudança, não apenas o "o quê"**
+
+## Benefícios
+
+- Histórico de projeto mais legível
+- Geração automática de changelogs
+- Comunicação clara sobre a natureza das mudanças
+- Facilidade para identificar quebras de compatibilidade
+- Melhor organização de releases
+

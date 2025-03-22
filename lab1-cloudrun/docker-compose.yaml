@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lab1-cloudrun
+    volumes:
+      - .:/app
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    driver: bridge
