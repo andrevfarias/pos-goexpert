@@ -1,20 +1,26 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"regexp"
 
-	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/application/usecase"
+	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/domain/entity"
 )
+
+// GetTemperatureByZipCodeUseCase define a interface para o caso de uso
+type GetTemperatureByZipCodeUseCase interface {
+	Execute(ctx context.Context, zipCode string) (*entity.Weather, error)
+}
 
 // TemperatureHandler lida com as requisições HTTP para obter temperatura por CEP
 type TemperatureHandler struct {
-	getTemperatureUseCase *usecase.GetTemperatureByZipCode
+	getTemperatureUseCase GetTemperatureByZipCodeUseCase
 }
 
 // NewTemperatureHandler cria uma nova instância do handler de temperatura
-func NewTemperatureHandler(getTemperatureUseCase *usecase.GetTemperatureByZipCode) *TemperatureHandler {
+func NewTemperatureHandler(getTemperatureUseCase GetTemperatureByZipCodeUseCase) *TemperatureHandler {
 	return &TemperatureHandler{
 		getTemperatureUseCase: getTemperatureUseCase,
 	}

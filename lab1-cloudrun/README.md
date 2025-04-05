@@ -163,30 +163,32 @@ Desenvolver um sistema em Go que recebe um CEP, identifica a cidade e retorna o 
 ref.:
 https://github.com/goexpert/cloud-run
 
-## Integração Contínua e Deploy
+## Deploy no Cloud Run
 
-O projeto utiliza GitHub Actions para automação de testes, build e deploy:
+Para fazer o deploy manual no Cloud Run:
 
-- **Testes**: Execução automática de testes em cada push/PR
-- **Build**: Build automático da imagem Docker
-- **Deploy**: Deploy automático no Google Cloud Run (apenas na branch main)
+1. No Google Cloud Platform:
 
-### Status do Build
+   - Crie um novo projeto (ou use um existente)
+   - Habilite a API do Cloud Run
+   - Instale e configure o Google Cloud SDK localmente
 
-[![CI/CD Pipeline](https://github.com/andrevfarias/goexpert/lab1-cloudrun/actions/workflows/ci.yaml/badge.svg)](https://github.com/andrevfarias/goexpert/lab1-cloudrun/actions/workflows/ci.yaml)
-[![codecov](https://codecov.io/gh/andrevfarias/goexpert/lab1-cloudrun/branch/main/graph/badge.svg)](https://codecov.io/gh/andrevfarias/goexpert/lab1-cloudrun)
+2. Configure as variáveis de ambiente:
 
-### Configuração do Deploy
+   - Crie um arquivo `.env` com suas configurações
+   - Adicione sua chave do WeatherAPI
 
-Para configurar o deploy, você precisa:
+3. Execute o deploy:
 
-1. Criar um projeto no Google Cloud Platform
-2. Criar uma conta de serviço com permissões para:
-   - Cloud Run Admin
-   - Storage Admin
-   - Service Account User
-3. Baixar a chave JSON da conta de serviço
-4. Configurar os seguintes secrets no GitHub:
-   - `GCP_PROJECT_ID`: ID do projeto no GCP
-   - `GCP_SA_KEY`: Conteúdo do arquivo JSON da conta de serviço
-   - `WEATHER_API_KEY`: Chave da API WeatherAPI
+```bash
+gcloud run deploy temperature-api \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "WEATHER_API_KEY=sua_chave_aqui" \
+  --set-env-vars "VIACEP_API_BASE_URL=https://viacep.com.br/ws" \
+  --set-env-vars "WEATHER_API_BASE_URL=http://api.weatherapi.com/v1" \
+  --set-env-vars "API_TIMEOUT_SECONDS=30"
+```
+
+A URL do serviço será exibida ao final do deploy.
