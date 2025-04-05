@@ -50,26 +50,51 @@ prioridades futuras.
 ### DevOps
 
 - ✅ Configuração Docker
-- ✅ Pipeline CI/CD
-  - ✅ Testes automatizados
-  - ✅ Build automatizado
-  - ✅ Deploy automatizado
-- [ ] Configuração Cloud Run
+- [ ] Deploy manual no Cloud Run
 
-## Próximas Tarefas
+## Tarefas Pendentes
 
-1. [ ] Configurar deploy no Cloud Run
-2. [ ] Implementar logging estruturado
-3. [ ] Adicionar métricas e monitoramento
-4. [ ] Implementar testes de integração
+1. [ ] Configurar deploy manual no Cloud Run
+2. [ ] Implementar testes de integração
 
 ## Observações
 
-- Todos os testes implementados estão passando
+- Todos os testes unitários implementados estão passando
 - Cobertura média de testes acima de 90%
 - Projeto seguindo Clean Architecture e DDD
 - Containers Docker configurados e funcionando
-- Pipeline CI/CD configurado com GitHub Actions
+
+## Requisitos do Projeto
+
+- [x] Receber CEP válido de 8 dígitos
+- [x] Pesquisar CEP e encontrar localização
+- [x] Retornar temperaturas em C°, F° e K°
+- [x] Responder adequadamente em todos os cenários
+- [ ] Deploy no Google Cloud Run
+
+## Próximos Passos (Continuação Futura)
+
+1. Deploy no Cloud Run:
+
+   - Criar projeto no GCP
+   - Habilitar API do Cloud Run
+   - Configurar credenciais
+   - Executar deploy manual
+
+2. Testes de Integração:
+
+   - Implementar testes end-to-end
+   - Validar fluxo completo com APIs externas
+
+3. Documentação Final:
+
+   - Documentar processo de deploy
+   - Atualizar README com URL do serviço
+
+## Legenda
+
+- ✅ Concluído
+- [ ] Pendente
 
 ## Features em Andamento
 
@@ -78,9 +103,8 @@ prioridades futuras.
 - ✅ Implementação de testes para entidades de domínio
   - ✅ Testes unitários para Weather (100% cobertura)
   - ✅ Testes unitários para Address (100% cobertura)
-- 🔄 Testes unitários para casos de uso
-  - 🔄 GetTemperatureByZipCode em implementação
-  - Mocks dos serviços em preparação
+- ✅ Testes unitários para casos de uso
+  - ✅ GetTemperatureByZipCode implementado
 - ⏳ Testes de integração para adaptadores (Planejado)
 
 ## Features Concluídas
@@ -100,21 +124,9 @@ prioridades futuras.
 
 ## Próximos Passos
 
-1. [ ] Implementar testes automatizados
-   - [✅] Testes unitários para entidades
-   - [🔄] Testes unitários para casos de uso
-   - [ ] Testes de integração para adaptadores
-2. [ ] Adicionar documentação Swagger
-3. [ ] Configurar CI/CD para Google Cloud Run
-4. [ ] Implementar logging estruturado
-5. [ ] Adicionar métricas e monitoramento
-
-## Legenda
-
-- ✅ Concluído
-- 🔄 Em Andamento
-- ⏳ Planejado
-- ❌ Bloqueado
+1. [ ] Configurar deploy manual no Cloud Run
+2. [ ] Adicionar métricas e monitoramento
+3. [ ] Implementar testes de integração
 
 ## Estrutura básica
 
