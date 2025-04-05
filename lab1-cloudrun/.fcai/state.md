@@ -6,48 +6,70 @@ prioridades futuras.
 
 ## Componentes Implementados
 
-### 1. Configuração
+### Core
 
-- ✅ Configuração centralizada usando Viper
-- ✅ Carregamento de variáveis do arquivo `.env`
-- ✅ Validação de configurações obrigatórias
+- ✅ Configuração centralizada
+- ✅ Entidades de domínio
+- ✅ Interfaces de serviço
+- ✅ Use cases
+  - ✅ GetTemperatureByZipCode
 
-### 2. Domínio
-
-- ✅ Entidade `Weather` com comportamentos de conversão de temperatura
-  - Cálculo de temperatura em Fahrenheit
-  - Cálculo de temperatura em Kelvin
-  - Serialização JSON com todas as unidades
-  - ✅ Testes unitários com 100% de cobertura
-- ✅ Entidade `Address` com validações e formatação
-  - Validação de CEP
-  - Formatação de CEP (00000-000)
-  - Limpeza de CEP (remoção de caracteres especiais)
-  - ✅ Testes unitários com 100% de cobertura
-- ✅ Interfaces de serviço bem definidas
-  - `WeatherService`
-  - `ZipCodeFinder`
-
-### 3. Casos de Uso
-
-- ✅ GetTemperatureByZipCode
-  - Integração com serviços de CEP e clima
-  - Tratamento de erros
-  - Retorno padronizado
-  - 🔄 Testes unitários em implementação
-
-### 4. Infraestrutura
+### Infraestrutura
 
 - ✅ Clientes HTTP
-  - Cliente ViaCEP
-  - Cliente WeatherAPI
-- ✅ Adaptadores de Serviço
-  - Implementação do WeatherService
-  - Implementação do ZipCodeFinder
-- ✅ API REST
-  - Handler de temperatura
-  - Roteamento com Chi
-  - Tratamento de erros HTTP
+  - ✅ ViaCEP
+  - ✅ WeatherAPI
+- ✅ Adaptadores de serviço
+- ✅ Handlers HTTP
+- ✅ Roteamento
+
+### Testes
+
+- ✅ Testes de entidades
+  - ✅ Address (100% cobertura)
+  - ✅ Weather (100% cobertura)
+- ✅ Testes de clientes HTTP
+  - ✅ ViaCEP (94.1% cobertura)
+  - ✅ WeatherAPI (90.5% cobertura)
+- ✅ Testes de use cases
+  - ✅ GetTemperatureByZipCode (100% cobertura)
+- ✅ Testes de handlers HTTP
+  - ✅ TemperatureHandler (81.8% cobertura)
+- ✅ Testes de middlewares
+  - ✅ Logger (94.1% cobertura)
+  - ✅ Recoverer (94.1% cobertura)
+- [ ] Testes de integração
+
+### Documentação
+
+- ✅ README principal
+- ✅ Documentação de features
+- ✅ Documentação da API (Swagger)
+- [ ] Guia de contribuição
+
+### DevOps
+
+- ✅ Configuração Docker
+- ✅ Pipeline CI/CD
+  - ✅ Testes automatizados
+  - ✅ Build automatizado
+  - ✅ Deploy automatizado
+- [ ] Configuração Cloud Run
+
+## Próximas Tarefas
+
+1. [ ] Configurar deploy no Cloud Run
+2. [ ] Implementar logging estruturado
+3. [ ] Adicionar métricas e monitoramento
+4. [ ] Implementar testes de integração
+
+## Observações
+
+- Todos os testes implementados estão passando
+- Cobertura média de testes acima de 90%
+- Projeto seguindo Clean Architecture e DDD
+- Containers Docker configurados e funcionando
+- Pipeline CI/CD configurado com GitHub Actions
 
 ## Features em Andamento
 
@@ -60,6 +82,13 @@ prioridades futuras.
   - 🔄 GetTemperatureByZipCode em implementação
   - Mocks dos serviços em preparação
 - ⏳ Testes de integração para adaptadores (Planejado)
+
+## Features Concluídas
+
+- ✅ Testes das entidades de domínio
+- ✅ Testes dos clientes HTTP
+- ✅ Testes dos use cases
+- ✅ Testes do handler de temperatura
 
 ## Melhorias Implementadas
 

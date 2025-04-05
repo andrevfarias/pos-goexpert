@@ -28,7 +28,7 @@ cp .env.example .env
 
 Edite o arquivo `.env` e adicione sua chave de API do WeatherAPI:
 
-```
+```bash
 WEATHER_API_KEY=sua_chave_da_weather_api
 ```
 
@@ -94,18 +94,34 @@ docker compose down
 
 ## Rotas da API
 
-- `GET /temperature/:cep` - Consulta a temperatura atual pelo CEP
+A documentação completa da API está disponível no formato OpenAPI/Swagger em `docs/swagger.yaml`.
 
-Exemplo de resposta:
+### Endpoints Principais
+
+- `GET /temperature?zipcode=12345678` - Consulta a temperatura atual pelo CEP
+
+  - Retorna a temperatura em Celsius, Fahrenheit e Kelvin
+  - CEP deve ter 8 dígitos numéricos
+
+- `GET /health` - Verifica a saúde da API
+
+### Exemplo de Resposta
 
 ```json
 {
-  "city": "São Paulo",
-  "temp_C": 28.5,
-  "temp_F": 83.3,
-  "temp_K": 301.65
+  "temp_c": 25.5,
+  "temp_f": 77.9,
+  "temp_k": 298.65
 }
 ```
+
+### Códigos de Status
+
+- 200: Sucesso
+- 400: CEP não informado
+- 422: CEP inválido
+- 404: CEP não encontrado
+- 500: Erro interno
 
 ## Objetivo
 
@@ -146,3 +162,31 @@ Desenvolver um sistema em Go que recebe um CEP, identifica a cidade e retorna o 
 
 ref.:
 https://github.com/goexpert/cloud-run
+
+## Integração Contínua e Deploy
+
+O projeto utiliza GitHub Actions para automação de testes, build e deploy:
+
+- **Testes**: Execução automática de testes em cada push/PR
+- **Build**: Build automático da imagem Docker
+- **Deploy**: Deploy automático no Google Cloud Run (apenas na branch main)
+
+### Status do Build
+
+[![CI/CD Pipeline](https://github.com/andrevfarias/goexpert/lab1-cloudrun/actions/workflows/ci.yaml/badge.svg)](https://github.com/andrevfarias/goexpert/lab1-cloudrun/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/andrevfarias/goexpert/lab1-cloudrun/branch/main/graph/badge.svg)](https://codecov.io/gh/andrevfarias/goexpert/lab1-cloudrun)
+
+### Configuração do Deploy
+
+Para configurar o deploy, você precisa:
+
+1. Criar um projeto no Google Cloud Platform
+2. Criar uma conta de serviço com permissões para:
+   - Cloud Run Admin
+   - Storage Admin
+   - Service Account User
+3. Baixar a chave JSON da conta de serviço
+4. Configurar os seguintes secrets no GitHub:
+   - `GCP_PROJECT_ID`: ID do projeto no GCP
+   - `GCP_SA_KEY`: Conteúdo do arquivo JSON da conta de serviço
+   - `WEATHER_API_KEY`: Chave da API WeatherAPI
