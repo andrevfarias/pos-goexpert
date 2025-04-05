@@ -74,18 +74,6 @@ func (c *Client) GetWeatherByCity(ctx context.Context, city string) (*entity.Wea
 		return nil, err
 	}
 
-	// Converter para Fahrenheit: F = C * 9/5 + 32
-	tempF := weatherResp.Current.TempC*9.0/5.0 + 32.0
-
-	// Converter para Kelvin: K = C + 273.15
-	tempK := weatherResp.Current.TempC + 273.15
-
 	// Criar a entidade de domínio
-	weather := &entity.Weather{
-		TempC: weatherResp.Current.TempC,
-		TempF: tempF,
-		TempK: tempK,
-	}
-
-	return weather, nil
+	return entity.NewWeather(weatherResp.Current.TempC), nil
 }

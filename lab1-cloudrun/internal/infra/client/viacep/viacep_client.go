@@ -65,15 +65,13 @@ func (c *Client) GetAddressByZipCode(ctx context.Context, zipCode string) (*enti
 		return nil, fmt.Errorf("CEP não encontrado")
 	}
 
-	// Converter a resposta da API para a entidade de domínio
-	address := &entity.Address{
-		ZipCode:      viaCEPResp.CEP,
-		Street:       viaCEPResp.Logradouro,
-		Complement:   viaCEPResp.Complemento,
-		Neighborhood: viaCEPResp.Bairro,
-		City:         viaCEPResp.Localidade,
-		State:        viaCEPResp.UF,
-	}
-
-	return address, nil
+	// Converter a resposta da API para a entidade de domínio usando o construtor
+	return entity.NewAddress(
+		viaCEPResp.CEP,
+		viaCEPResp.Logradouro,
+		viaCEPResp.Complemento,
+		viaCEPResp.Bairro,
+		viaCEPResp.Localidade,
+		viaCEPResp.UF,
+	)
 }

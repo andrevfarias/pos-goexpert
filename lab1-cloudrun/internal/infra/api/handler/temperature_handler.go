@@ -49,7 +49,7 @@ func (h *TemperatureHandler) GetTemperatureByZipCode(w http.ResponseWriter, r *h
 
 	// Retornar o resultado como JSON
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(weather); err != nil {
+	if err := json.NewEncoder(w).Encode(weather.ToJSON()); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

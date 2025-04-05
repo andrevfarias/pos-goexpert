@@ -1,6 +1,91 @@
 # Estado Atual do Projeto
 
-Este arquivo fornece uma referência rápida do contexto atual do projeto, detalhando features ativas, tarefas em andamento, tarefas concluídas e prioridades futuras.
+Este arquivo fornece uma referência rápida do contexto atual do projeto,
+detalhando features ativas, tarefas em andamento, tarefas concluídas e
+prioridades futuras.
+
+## Componentes Implementados
+
+### 1. Configuração
+
+- ✅ Configuração centralizada usando Viper
+- ✅ Carregamento de variáveis do arquivo `.env`
+- ✅ Validação de configurações obrigatórias
+
+### 2. Domínio
+
+- ✅ Entidade `Weather` com comportamentos de conversão de temperatura
+  - Cálculo de temperatura em Fahrenheit
+  - Cálculo de temperatura em Kelvin
+  - Serialização JSON com todas as unidades
+  - ✅ Testes unitários com 100% de cobertura
+- ✅ Entidade `Address` com validações e formatação
+  - Validação de CEP
+  - Formatação de CEP (00000-000)
+  - Limpeza de CEP (remoção de caracteres especiais)
+  - ✅ Testes unitários com 100% de cobertura
+- ✅ Interfaces de serviço bem definidas
+  - `WeatherService`
+  - `ZipCodeFinder`
+
+### 3. Casos de Uso
+
+- ✅ GetTemperatureByZipCode
+  - Integração com serviços de CEP e clima
+  - Tratamento de erros
+  - Retorno padronizado
+  - 🔄 Testes unitários em implementação
+
+### 4. Infraestrutura
+
+- ✅ Clientes HTTP
+  - Cliente ViaCEP
+  - Cliente WeatherAPI
+- ✅ Adaptadores de Serviço
+  - Implementação do WeatherService
+  - Implementação do ZipCodeFinder
+- ✅ API REST
+  - Handler de temperatura
+  - Roteamento com Chi
+  - Tratamento de erros HTTP
+
+## Features em Andamento
+
+### Testing Implementation
+
+- ✅ Implementação de testes para entidades de domínio
+  - ✅ Testes unitários para Weather (100% cobertura)
+  - ✅ Testes unitários para Address (100% cobertura)
+- 🔄 Testes unitários para casos de uso
+  - 🔄 GetTemperatureByZipCode em implementação
+  - Mocks dos serviços em preparação
+- ⏳ Testes de integração para adaptadores (Planejado)
+
+## Melhorias Implementadas
+
+1. Remoção de lógica de conversão do cliente WeatherAPI
+2. Adição de comportamentos nas entidades de domínio
+3. Implementação de validações no domínio
+4. Configuração via arquivo `.env`
+5. Testes unitários completos para entidades de domínio
+
+## Próximos Passos
+
+1. [ ] Implementar testes automatizados
+   - [✅] Testes unitários para entidades
+   - [🔄] Testes unitários para casos de uso
+   - [ ] Testes de integração para adaptadores
+2. [ ] Adicionar documentação Swagger
+3. [ ] Configurar CI/CD para Google Cloud Run
+4. [ ] Implementar logging estruturado
+5. [ ] Adicionar métricas e monitoramento
+
+## Legenda
+
+- ✅ Concluído
+- 🔄 Em Andamento
+- ⏳ Planejado
+- ❌ Bloqueado
 
 ## Estrutura básica
 
