@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -18,10 +19,15 @@ type Config struct {
 
 // LoadConfig carrega as configurações do arquivo .env e variáveis de ambiente
 func LoadConfig(path string) (*Config, error) {
-	viper.AddConfigPath(path)
+	envPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao obter caminho absoluto: %w", err)
+	}
+
+	viper.AddConfigPath(envPath)
 	viper.SetConfigName("app_config")
 	viper.SetConfigType("env")
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile(filepath.Join(envPath, ".env"))
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
@@ -42,6 +48,17 @@ func LoadConfig(path string) (*Config, error) {
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("erro ao decodificar configurações: %w", err)
+	}
+
+	// Definindo valores padrão
+	if config.Port == "" {
+		config.Port = "8080" // Valor padrão para a porta
+	}
+	if config.ViacepAPIBaseURL == "" {
+		config.ViacepAPIBaseURL = "https://viacep.com.br/ws" // Valor padrão para a API do ViaCEP
+	}
+	if config.WeatherAPIBaseURL == "" {
+		config.WeatherAPIBaseURL = "https://api.weatherapi.com/v1" // Valor padrão para a API do clima
 	}
 
 	// Validações

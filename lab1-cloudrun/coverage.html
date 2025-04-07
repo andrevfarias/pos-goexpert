@@ -1,0 +1,544 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>app: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/andrevfarias/go-expert/lab1-cloudrun/cmd/app/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/config/config.go (0.0%)</option>
+				
+				<option value="file2">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/entity/zipcode.go (90.0%)</option>
+				
+				<option value="file3">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api/handler/temperature_handler.go (0.0%)</option>
+				
+				<option value="file4">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api/router.go (0.0%)</option>
+				
+				<option value="file5">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/service/viacepapi_service.go (81.2%)</option>
+				
+				<option value="file6">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/service/weatherapi_service.go (81.2%)</option>
+				
+				<option value="file7">github.com/andrevfarias/go-expert/lab1-cloudrun/internal/usecase/get_temperature_by_zipcode.go (84.6%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "log"
+        "net/http"
+
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/config"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api/handler"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/service"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/usecase"
+)
+
+func main() <span class="cov0" title="0">{
+        // Carregar as configurações
+        cfg, err := config.LoadConfig(".")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Erro ao carregar configurações: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">viaCepService := service.NewViaCepApiService(cfg.ViacepAPIBaseURL)
+        weatherService := service.NewWeatherApiService(cfg.WeatherAPIBaseURL, cfg.WeatherAPIKey)
+
+        getTemperatureUseCase := usecase.NewGetTemperatureByZipCode(viaCepService, weatherService)
+
+        temperatureHandler := handler.NewTemperatureHandler(getTemperatureUseCase)
+
+        r := api.NewRouter(temperatureHandler)
+
+        // Iniciar o servidor
+        log.Printf("Servidor iniciando na porta %s...\n", cfg.Port)
+        log.Printf("Configurações:\n\tURL ViaCEP=%s\n\tURL WeatherAPI=%s\n", cfg.ViacepAPIBaseURL, cfg.WeatherAPIBaseURL)
+
+        if err := http.ListenAndServe(":"+cfg.Port, r); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Erro ao iniciar o servidor: %v", err)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package config
+
+import (
+        "fmt"
+        "path/filepath"
+        "strings"
+
+        "github.com/spf13/viper"
+)
+
+// Config representa as configurações da aplicação
+type Config struct {
+        Port              string `mapstructure:"PORT"`
+        ViacepAPIBaseURL  string `mapstructure:"VIACEP_API_BASE_URL"`
+        WeatherAPIBaseURL string `mapstructure:"WEATHER_API_BASE_URL"`
+        WeatherAPIKey     string `mapstructure:"WEATHER_API_KEY"`
+        APITimeoutSeconds int    `mapstructure:"API_TIMEOUT_SECONDS"`
+}
+
+// LoadConfig carrega as configurações do arquivo .env e variáveis de ambiente
+func LoadConfig(path string) (*Config, error) <span class="cov0" title="0">{
+        envPath, err := filepath.Abs(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("erro ao obter caminho absoluto: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">viper.AddConfigPath(envPath)
+        viper.SetConfigName("app_config")
+        viper.SetConfigType("env")
+        viper.SetConfigFile(filepath.Join(envPath, ".env"))
+
+        viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+        viper.BindEnv("PORT")
+        viper.BindEnv("VIACEP_API_BASE_URL")
+        viper.BindEnv("WEATHER_API_BASE_URL")
+        viper.BindEnv("WEATHER_API_KEY")
+        viper.BindEnv("API_TIMEOUT_SECONDS")
+
+        viper.AutomaticEnv()
+
+        if err := viper.ReadInConfig(); err != nil </span><span class="cov0" title="0">{
+                if _, ok := err.(viper.ConfigFileNotFoundError); !ok </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("erro ao ler arquivo de configuração: %w", err)
+                }</span>
+        }
+
+        <span class="cov0" title="0">var config Config
+        if err := viper.Unmarshal(&amp;config); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("erro ao decodificar configurações: %w", err)
+        }</span>
+
+        // Definindo valores padrão
+        <span class="cov0" title="0">if config.Port == "" </span><span class="cov0" title="0">{
+                config.Port = "8080" // Valor padrão para a porta
+        }</span>
+        <span class="cov0" title="0">if config.ViacepAPIBaseURL == "" </span><span class="cov0" title="0">{
+                config.ViacepAPIBaseURL = "https://viacep.com.br/ws" // Valor padrão para a API do ViaCEP
+        }</span>
+        <span class="cov0" title="0">if config.WeatherAPIBaseURL == "" </span><span class="cov0" title="0">{
+                config.WeatherAPIBaseURL = "https://api.weatherapi.com/v1" // Valor padrão para a API do clima
+        }</span>
+
+        // Validações
+        <span class="cov0" title="0">if config.WeatherAPIKey == "" </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("WEATHER_API_KEY é obrigatória")
+        }</span>
+
+        <span class="cov0" title="0">return &amp;config, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package entity
+
+import (
+        "errors"
+        "regexp"
+)
+
+var (
+        ErrInvalidZipCode = errors.New("invalid zipcode")
+        ErrEmptyZipCode   = errors.New("empty zipcode")
+)
+
+type ZipCode struct {
+        ZipCode string
+}
+
+func NewZipCode(zipcode string) (*ZipCode, error) <span class="cov8" title="1">{
+        z := &amp;ZipCode{
+                ZipCode: zipcode,
+        }
+
+        if err := z.Validate(); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return z, nil</span>
+}
+
+func (z *ZipCode) Validate() error <span class="cov8" title="1">{
+        if z.ZipCode == "" </span><span class="cov0" title="0">{
+                return ErrEmptyZipCode
+        }</span>
+
+        <span class="cov8" title="1">re := regexp.MustCompile(`^\d{8}$`)
+        if !re.MatchString(z.ZipCode) </span><span class="cov8" title="1">{
+                return ErrInvalidZipCode
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package handler
+
+import (
+        "encoding/json"
+        "net/http"
+
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/entity"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/usecase"
+)
+
+// TemperatureHandler lida com as requisições HTTP para obter temperatura por CEP
+type TemperatureHandler struct {
+        getTemperatureUseCase *usecase.GetTemperatureByZipCode
+}
+
+// NewTemperatureHandler cria uma nova instância do handler de temperatura
+func NewTemperatureHandler(getTemperatureUseCase *usecase.GetTemperatureByZipCode) *TemperatureHandler <span class="cov0" title="0">{
+        return &amp;TemperatureHandler{
+                getTemperatureUseCase: getTemperatureUseCase,
+        }
+}</span>
+
+// GetTemperatureByZipCode busca a temperatura a partir de um CEP
+func (h *TemperatureHandler) GetTemperatureByZipCode(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        // Obter o CEP da URL
+        rawZipCode := r.PathValue("cep")
+        zipCode, err := entity.NewZipCode(rawZipCode)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+                return
+        }</span>
+
+        <span class="cov0" title="0">weather, err := h.getTemperatureUseCase.Execute(r.Context(), zipCode)
+        if err != nil </span><span class="cov0" title="0">{
+                switch err </span>{
+                case usecase.ErrInvalidZipCode:<span class="cov0" title="0">
+                        http.Error(w, err.Error(), http.StatusUnprocessableEntity)</span>
+                case usecase.ErrZipCodeNotFound:<span class="cov0" title="0">
+                        http.Error(w, err.Error(), http.StatusNotFound)</span>
+                default:<span class="cov0" title="0">
+                        http.Error(w, err.Error(), http.StatusInternalServerError)</span>
+                }
+                <span class="cov0" title="0">return</span>
+        }
+
+        // Retornar o resultado como JSON
+        <span class="cov0" title="0">w.Header().Set("Content-Type", "application/json")
+        if err := json.NewEncoder(w).Encode(weather); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+                return
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package api
+
+import (
+        "net/http"
+
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api/handler"
+        "github.com/go-chi/chi/v5"
+        "github.com/go-chi/chi/v5/middleware"
+)
+
+// NewRouter cria um novo roteador HTTP para a API
+func NewRouter(temperatureHandler *handler.TemperatureHandler) http.Handler <span class="cov0" title="0">{
+        r := chi.NewRouter()
+
+        // Middlewares
+        r.Use(middleware.Logger)
+        r.Use(middleware.Recoverer)
+
+        // Rotas
+        r.Get("/health", func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte("OK"))
+        }</span>)
+
+        <span class="cov0" title="0">r.Get("/cep/{cep}", temperatureHandler.GetTemperatureByZipCode)
+
+        return r</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package service
+
+import (
+        "encoding/json"
+        "errors"
+        "fmt"
+        "io"
+        "net/http"
+        "strings"
+)
+
+var ErrZipCodeNotFound = errors.New("zipcode not found")
+var ErrApiError = errors.New("api error")
+
+type ViaCepApiService struct {
+        BaseURL string
+}
+
+type AddressDto struct {
+        City string `json:"localidade"`
+}
+
+func NewViaCepApiService(baseURL string) *ViaCepApiService <span class="cov8" title="1">{
+        return &amp;ViaCepApiService{BaseURL: baseURL}
+}</span>
+
+func (s *ViaCepApiService) GetAddressByZipcode(zipcode string) (*AddressDto, error) <span class="cov8" title="1">{
+        // Pesquisar o CEP na API ViaCEP
+        viaCepResponse, err := http.Get(fmt.Sprintf("%s/%s/json", s.BaseURL, zipcode))
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, ErrApiError
+        }</span>
+        <span class="cov8" title="1">defer viaCepResponse.Body.Close()
+
+        // Verificar se a resposta é 200
+        if viaCepResponse.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+                return nil, ErrApiError
+        }</span>
+
+        // Ler o corpo da resposta
+        <span class="cov8" title="1">viaCepBody, err := io.ReadAll(viaCepResponse.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, ErrApiError
+        }</span>
+
+        // Verificar se retornou erro (cep não encontrado). Body: "{\n  \"erro\": \"true\"\n}"
+        <span class="cov8" title="1">if strings.Contains(string(viaCepBody), "\"erro\": \"true\"") </span><span class="cov8" title="1">{
+                return nil, ErrZipCodeNotFound
+        }</span>
+
+        // Parsear o corpo da resposta
+        <span class="cov8" title="1">var addressDto AddressDto
+        if err := json.Unmarshal(viaCepBody, &amp;addressDto); err != nil </span><span class="cov0" title="0">{
+                return nil, ErrApiError
+        }</span>
+
+        <span class="cov8" title="1">return &amp;addressDto, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package service
+
+import (
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+        "net/url"
+)
+
+type WeatherApiService struct {
+        BaseURL string
+        APIKey  string
+}
+
+type WeatherAPIResponse struct {
+        Current struct {
+                Temperature float64 `json:"temp_c"`
+        } `json:"current"`
+}
+
+type WeatherApiServiceOutputDto struct {
+        TempC float64 `json:"temp_c"`
+}
+
+func NewWeatherApiService(baseURL string, apiKey string) *WeatherApiService <span class="cov8" title="1">{
+        return &amp;WeatherApiService{BaseURL: baseURL, APIKey: apiKey}
+}</span>
+
+func (s *WeatherApiService) GetWeatherByCity(city string) (*WeatherApiServiceOutputDto, error) <span class="cov8" title="1">{
+        // Buscar a temperatura atual na localidade via WeatherAPI
+        escapedCity := url.QueryEscape(city)
+        requestURI := fmt.Sprintf("%s/current.json?key=%s&amp;q=%s", s.BaseURL, s.APIKey, escapedCity)
+        weatherResponse, err := http.Get(requestURI)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer weatherResponse.Body.Close()
+
+        // Verificar se a resposta é 200
+        if weatherResponse.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+                return nil, ErrApiError
+        }</span>
+
+        // Ler o corpo da resposta
+        <span class="cov8" title="1">weatherBody, err := io.ReadAll(weatherResponse.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Parsear o corpo da resposta
+        <span class="cov8" title="1">var weatherAPIResponse WeatherAPIResponse
+        if err := json.Unmarshal(weatherBody, &amp;weatherAPIResponse); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;WeatherApiServiceOutputDto{
+                TempC: weatherAPIResponse.Current.Temperature,
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package usecase
+
+import (
+        "context"
+        "errors"
+        "math"
+
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/entity"
+        "github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/service"
+)
+
+var (
+        ErrInvalidZipCode  = errors.New("invalid zipcode")
+        ErrZipCodeNotFound = errors.New("can not find zipcode")
+)
+
+type GetTemperatureByZipCodeOutputDto struct {
+        TempC float64 `json:"temp_c"`
+        TempF float64 `json:"temp_f"`
+        TempK float64 `json:"temp_k"`
+}
+
+// GetTemperatureByZipCode é o caso de uso para obter a temperatura a partir de um CEP
+type GetTemperatureByZipCode struct {
+        viaCepService  *service.ViaCepApiService
+        weatherService *service.WeatherApiService
+}
+
+// NewGetTemperatureByZipCode cria uma nova instância do caso de uso
+func NewGetTemperatureByZipCode(
+        viaCepService *service.ViaCepApiService,
+        weatherService *service.WeatherApiService,
+) *GetTemperatureByZipCode <span class="cov8" title="1">{
+        return &amp;GetTemperatureByZipCode{
+                viaCepService:  viaCepService,
+                weatherService: weatherService,
+        }
+}</span>
+
+// Execute executa o caso de uso para obter a temperatura a partir de um CEP
+func (uc *GetTemperatureByZipCode) Execute(ctx context.Context, zipCode *entity.ZipCode) (*GetTemperatureByZipCodeOutputDto, error) <span class="cov8" title="1">{
+        // Busca o endereço a partir do CEP
+        address, err := uc.viaCepService.GetAddressByZipcode(zipCode.ZipCode)
+        if err != nil </span><span class="cov8" title="1">{
+                switch err </span>{
+                case service.ErrZipCodeNotFound:<span class="cov8" title="1">
+                        return nil, ErrZipCodeNotFound</span>
+                default:<span class="cov0" title="0">
+                        return nil, err</span>
+                }
+        }
+
+        // Busca a temperatura a partir da cidade
+        <span class="cov8" title="1">weather, err := uc.weatherService.GetWeatherByCity(address.City)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">tempC := math.Round(weather.TempC*100) / 100
+        tempF := math.Round((tempC*1.8+32)*100) / 100
+        tempK := math.Round((tempC+273.15)*100) / 100
+
+        return &amp;GetTemperatureByZipCodeOutputDto{
+                TempC: tempC,
+                TempF: tempF,
+                TempK: tempK,
+        }, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

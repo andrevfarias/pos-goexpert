@@ -4,13 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/application/usecase"
 	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/config"
 	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api"
 	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/api/handler"
-	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/client/viacep"
-	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/client/weatherapi"
 	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/infra/service"
+	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/usecase"
 )
 
 func main() {
@@ -20,34 +18,20 @@ func main() {
 		log.Fatalf("Erro ao carregar configurações: %v", err)
 	}
 
-	// Inicializar os clientes HTTP
-	viaCEPClient := viacep.NewClient(cfg.ViacepAPIBaseURL, cfg.APITimeoutSeconds)
-	weatherAPIClient := weatherapi.NewClient(cfg.WeatherAPIBaseURL, cfg.WeatherAPIKey, cfg.APITimeoutSeconds)
+	viaCepService := service.NewViaCepApiService(cfg.ViacepAPIBaseURL)
+	weatherService := service.NewWeatherApiService(cfg.WeatherAPIBaseURL, cfg.WeatherAPIKey)
 
-	// Inicializar os serviços
-	zipCodeFinderService := service.NewZipCodeFinderService(viaCEPClient)
-	weatherService := service.NewWeatherService(weatherAPIClient)
+	getTemperatureUseCase := usecase.NewGetTemperatureByZipCode(viaCepService, weatherService)
 
-	// Inicializar o caso de uso
-	getTemperatureUseCase := usecase.NewGetTemperatureByZipCode(zipCodeFinderService, weatherService)
-
-	// Inicializar o handler
 	temperatureHandler := handler.NewTemperatureHandler(getTemperatureUseCase)
 
-	// Inicializar o router
-	router := api.NewRouter(temperatureHandler)
+	r := api.NewRouter(temperatureHandler)
 
 	// Iniciar o servidor
-	port := cfg.Port
-	if port == "" {
-		port = "8080"
-	}
+	log.Printf("Servidor iniciando na porta %s...\n", cfg.Port)
+	log.Printf("Configurações:\n\tURL ViaCEP=%s\n\tURL WeatherAPI=%s\n", cfg.ViacepAPIBaseURL, cfg.WeatherAPIBaseURL)
 
-	log.Printf("Servidor iniciando na porta %s...\n", port)
-	log.Printf("Configurações: URL ViaCEP=%s, URL WeatherAPI=%s, Timeout=%d\n",
-		cfg.ViacepAPIBaseURL, cfg.WeatherAPIBaseURL, cfg.APITimeoutSeconds)
-
-	if err := http.ListenAndServe(":"+port, router); err != nil {
+	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }

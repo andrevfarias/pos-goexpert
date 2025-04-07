@@ -1,26 +1,20 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"regexp"
 
-	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/domain/entity"
+	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/entity"
+	"github.com/andrevfarias/go-expert/lab1-cloudrun/internal/usecase"
 )
-
-// GetTemperatureByZipCodeUseCase define a interface para o caso de uso
-type GetTemperatureByZipCodeUseCase interface {
-	Execute(ctx context.Context, zipCode string) (*entity.Weather, error)
-}
 
 // TemperatureHandler lida com as requisições HTTP para obter temperatura por CEP
 type TemperatureHandler struct {
-	getTemperatureUseCase GetTemperatureByZipCodeUseCase
+	getTemperatureUseCase *usecase.GetTemperatureByZipCode
 }
 
 // NewTemperatureHandler cria uma nova instância do handler de temperatura
-func NewTemperatureHandler(getTemperatureUseCase GetTemperatureByZipCodeUseCase) *TemperatureHandler {
+func NewTemperatureHandler(getTemperatureUseCase *usecase.GetTemperatureByZipCode) *TemperatureHandler {
 	return &TemperatureHandler{
 		getTemperatureUseCase: getTemperatureUseCase,
 	}
@@ -29,40 +23,30 @@ func NewTemperatureHandler(getTemperatureUseCase GetTemperatureByZipCodeUseCase)
 // GetTemperatureByZipCode busca a temperatura a partir de um CEP
 func (h *TemperatureHandler) GetTemperatureByZipCode(w http.ResponseWriter, r *http.Request) {
 	// Obter o CEP da URL
-	zipCode := r.URL.Query().Get("zipcode")
-	if zipCode == "" {
-		http.Error(w, "zipcode query parameter is required", http.StatusBadRequest)
-		return
-	}
-
-	// Validar o formato do CEP
-	isValid, err := validateZipCode(zipCode)
+	rawZipCode := r.PathValue("cep")
+	zipCode, err := entity.NewZipCode(rawZipCode)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if !isValid {
-		http.Error(w, "invalid zipcode", http.StatusUnprocessableEntity)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
-	// Executar o caso de uso
 	weather, err := h.getTemperatureUseCase.Execute(r.Context(), zipCode)
 	if err != nil {
-		http.Error(w, "can not find zipcode", http.StatusNotFound)
+		switch err {
+		case usecase.ErrInvalidZipCode:
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		case usecase.ErrZipCodeNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
 	// Retornar o resultado como JSON
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(weather.ToJSON()); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := json.NewEncoder(w).Encode(weather); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-}
-
-// validateZipCode valida se o CEP tem o formato correto (8 dígitos)
-func validateZipCode(zipCode string) (bool, error) {
-	re := regexp.MustCompile(`^\d{8}$`)
-	return re.MatchString(zipCode), nil
 }

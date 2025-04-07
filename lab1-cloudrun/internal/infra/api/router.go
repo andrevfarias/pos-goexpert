@@ -22,7 +22,7 @@ func NewRouter(temperatureHandler *handler.TemperatureHandler) http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/temperature", temperatureHandler.GetTemperatureByZipCode)
+	r.Get("/cep/{cep}", temperatureHandler.GetTemperatureByZipCode)
 
 	return r
 }

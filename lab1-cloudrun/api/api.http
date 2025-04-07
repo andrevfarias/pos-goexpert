@@ -1,0 +1,14 @@
+// 89800000 é um CEP válido
+GET http://localhost:8080/cep/89801000
+
+###
+
+// 1234567890 é um CEP válido mas não existe
+GET http://localhost:8080/cep/12345678
+
+###
+
+// 1234567890 é um CEP inválido
+GET http://localhost:8080/cep/1234567890
+
+

@@ -8,7 +8,9 @@ RUN apk add --no-cache \
     make \
     curl \
     gcc \
-    musl-dev
+    musl-dev \
+    ca-certificates \
+    && update-ca-certificates
 
 # Copia o arquivo go.mod (e potencialmente go.sum) para o contêiner
 COPY go.mod ./

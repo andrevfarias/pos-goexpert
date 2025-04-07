@@ -2,7 +2,46 @@
 
 ## Lab 1 - Cloud Run - API de Consulta de Temperatura por CEP
 
-Esta API permite consultar a temperatura atual em uma localidade a partir de um CEP válido. A aplicação consulta o serviço ViaCEP para obter a cidade correspondente ao CEP informado, e então consulta o WeatherAPI para obter a temperatura atual naquela localidade.
+## Objetivo
+
+Desenvolver um sistema em Go que recebe um CEP, identifica a cidade e retorna o clima atual (temperatura em graus celsius, fahrenheit e kelvin). Esse sistema deverá ser publicado no Google Cloud Run.
+
+## Requisitos
+
+- [x] O sistema deve receber um CEP válido de 8 digitos
+- [x] O sistema deve realizar a pesquisa do CEP e encontrar o nome da localização, a partir disso, deverá retornar as temperaturas e formata-lás em: Celsius, Fahrenheit, Kelvin.
+- [x] O sistema deve responder adequadamente nos seguintes cenários:
+  - [x] Em caso de sucesso:
+    - Código HTTP: 200
+    - Response Body: { "temp_C": 28.5, "temp_F": 28.5, "temp_K": 28.5 }
+  - [x] Em caso de falha, caso o CEP não seja válido (com formato correto):
+    - Código HTTP: 422
+    - Mensagem: invalid zipcode
+  - ​[X] ​​Em caso de falha, caso o CEP não seja encontrado:
+    - Código HTTP: 404
+    - Mensagem: can not find zipcode
+- [x] Deverá ser realizado o deploy no Google Cloud Run.
+
+## Dicas
+
+- Utilize a API viaCEP (ou similar) para encontrar a localização que deseja consultar a temperatura: https://viacep.com.br/
+- Utilize a API WeatherAPI (ou similar) para consultar as temperaturas desejadas: https://www.weatherapi.com/
+- Para realizar a conversão de Celsius para Fahrenheit, utilize a seguinte fórmula: F = C \* 1,8 + 32
+- Para realizar a conversão de Celsius para Kelvin, utilize a seguinte fórmula: K = C + 273
+  - Sendo F = Fahrenheit
+  - Sendo C = Celsius
+  - Sendo K = Kelvin
+
+## Entrega
+
+- [x] O código-fonte completo da implementação.
+- [x] Testes automatizados demonstrando o funcionamento.
+- [x] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
+- [x] Deploy realizado no Google Cloud Run (free tier) e endereço ativo para ser acessado.
+
+## Solução proposta
+
+A API permite consultar a temperatura atual em uma localidade a partir de um CEP válido. A aplicação consulta o serviço ViaCEP para obter a cidade correspondente ao CEP informado, e então consulta o WeatherAPI para obter a temperatura atual naquela localidade.
 
 ## Requisitos
 
@@ -20,10 +59,8 @@ cd lab1-cloudrun
 
 ### 2. Configure as variáveis de ambiente
 
-Copie o arquivo `.env.example` para `.env` e preencha as variáveis necessárias:
-
 ```bash
-cp .env.example .env
+make env-setup
 ```
 
 Edite o arquivo `.env` e adicione sua chave de API do WeatherAPI:
@@ -37,13 +74,13 @@ Você pode obter uma chave gratuita em: [WeatherAPI](https://www.weatherapi.com/
 ### 3. Inicie o ambiente de desenvolvimento
 
 ```bash
-docker compose up -d
+make up
 ```
 
 ### 4. Execute a aplicação
 
 ```bash
-docker compose exec app go run cmd/app/main.go
+make run
 ```
 
 A aplicação estará disponível em: http://localhost:8080
@@ -51,54 +88,65 @@ A aplicação estará disponível em: http://localhost:8080
 ### 5. Execute os testes
 
 ```bash
-docker compose exec app go test ./...
+make test
 ```
 
 ## Comandos Úteis
 
-### Acessar o terminal do container
+O projeto inclui um Makefile com os seguintes comandos:
 
 ```bash
-docker compose exec app sh
-```
+# Ver todos os comandos disponíveis
+make help
 
-### Verificar logs da aplicação
+# Iniciar o ambiente de desenvolvimento
+make up
 
-```bash
-docker compose logs -f app
-```
+# Parar o ambiente de desenvolvimento
+make down
 
-### Parar o ambiente
+# Executar a aplicação
+make run
 
-```bash
-docker compose down
+# Executar os testes
+make test
+
+# Acessar o shell do container
+make sh
+
+# Configurar o arquivo de ambiente
+make env-setup
+
+# Executar testes com cobertura
+make test-coverage
+
+# Construir a imagem de produção
+make build
+
+# Executar o container de produção
+make run-prod
 ```
 
 ## Estrutura do Projeto
 
-```
 .
-├── cmd/app/                  # Ponto de entrada da aplicação
-├── internal/                 # Código interno da aplicação
-│   ├── entity/               # Entidades de domínio
-│   ├── handlers/             # Handlers HTTP
-│   ├── usecases/             # Casos de uso da aplicação
-│   ├── clients/              # Clientes para APIs externas
-│   │   ├── viacep/           # Cliente para API ViaCEP
-│   │   └── weatherapi/       # Cliente para WeatherAPI
-│   └── dto/                  # Data Transfer Objects
-├── pkg/                      # Pacotes compartilháveis
-│   └── adapter/              # Adaptadores e utilitários
-└── Dockerfile                # Configuração do container
-```
+├── cmd/app/ # Ponto de entrada da aplicação
+├── internal/ # Código interno da aplicação
+│ ├── entity/ # Entidades de domínio
+│ ├── infra/ # Infraestrutura da aplicação
+│ │ ├── api/ # APIs da aplicação
+│ │ │ └── handler/ # Handlers HTTP
+│ │ └── service/ # Serviços para APIs externas
+│ ├── usecase/ # Casos de uso da aplicação
+│ └── dto/ # Data Transfer Objects
+├── Dockerfile.prod # Configuração do container para produção
+└── Dockerfile # Configuração do container para desenvolvimento
 
 ## Rotas da API
 
-A documentação completa da API está disponível no formato OpenAPI/Swagger em `docs/swagger.yaml`.
-
 ### Endpoints Principais
 
-- `GET /temperature?zipcode=12345678` - Consulta a temperatura atual pelo CEP
+- `GET /cep/{cep}` - Consulta a temperatura atual pelo CEP
 
   - Retorna a temperatura em Celsius, Fahrenheit e Kelvin
   - CEP deve ter 8 dígitos numéricos
@@ -117,78 +165,6 @@ A documentação completa da API está disponível no formato OpenAPI/Swagger em
 
 ### Códigos de Status
 
-- 200: Sucesso
-- 400: CEP não informado
-- 422: CEP inválido
-- 404: CEP não encontrado
-- 500: Erro interno
-
-## Objetivo
-
-Desenvolver um sistema em Go que recebe um CEP, identifica a cidade e retorna o clima atual (temperatura em graus celsius, fahrenheit e kelvin). Esse sistema deverá ser publicado no Google Cloud Run.
-
-## Requisitos
-
-- [ ] O sistema deve receber um CEP válido de 8 digitos
-- [ ] O sistema deve realizar a pesquisa do CEP e encontrar o nome da localização, a partir disso, deverá retornar as temperaturas e formata-lás em: Celsius, Fahrenheit, Kelvin.
-- [ ] O sistema deve responder adequadamente nos seguintes cenários:
-  - [ ] Em caso de sucesso:
-    - Código HTTP: 200
-    - Response Body: { "temp_C": 28.5, "temp_F": 28.5, "temp_K": 28.5 }
-  - [ ] Em caso de falha, caso o CEP não seja válido (com formato correto):
-    - Código HTTP: 422
-    - Mensagem: invalid zipcode
-  - ​[ ] ​​Em caso de falha, caso o CEP não seja encontrado:
-    - Código HTTP: 404
-    - Mensagem: can not find zipcode
-- [ ] Deverá ser realizado o deploy no Google Cloud Run.
-
-## Dicas
-
-- Utilize a API viaCEP (ou similar) para encontrar a localização que deseja consultar a temperatura: https://viacep.com.br/
-- Utilize a API WeatherAPI (ou similar) para consultar as temperaturas desejadas: https://www.weatherapi.com/
-- Para realizar a conversão de Celsius para Fahrenheit, utilize a seguinte fórmula: F = C \* 1,8 + 32
-- Para realizar a conversão de Celsius para Kelvin, utilize a seguinte fórmula: K = C + 273
-  - Sendo F = Fahrenheit
-  - Sendo C = Celsius
-  - Sendo K = Kelvin
-
-## Entrega
-
-- [ ] O código-fonte completo da implementação.
-- [ ] Testes automatizados demonstrando o funcionamento.
-- [ ] Utilize docker/docker-compose para que possamos realizar os testes de sua aplicação.
-- [ ] Deploy realizado no Google Cloud Run (free tier) e endereço ativo para ser acessado.
-
-ref.:
-https://github.com/goexpert/cloud-run
-
-## Deploy no Cloud Run
-
-Para fazer o deploy manual no Cloud Run:
-
-1. No Google Cloud Platform:
-
-   - Crie um novo projeto (ou use um existente)
-   - Habilite a API do Cloud Run
-   - Instale e configure o Google Cloud SDK localmente
-
-2. Configure as variáveis de ambiente:
-
-   - Crie um arquivo `.env` com suas configurações
-   - Adicione sua chave do WeatherAPI
-
-3. Execute o deploy:
-
-```bash
-gcloud run deploy temperature-api \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars "WEATHER_API_KEY=sua_chave_aqui" \
-  --set-env-vars "VIACEP_API_BASE_URL=https://viacep.com.br/ws" \
-  --set-env-vars "WEATHER_API_BASE_URL=http://api.weatherapi.com/v1" \
-  --set-env-vars "API_TIMEOUT_SECONDS=30"
-```
-
-A URL do serviço será exibida ao final do deploy.
+- 200: success
+- 404: zipcode not found
+- 422: invalid zipcode
