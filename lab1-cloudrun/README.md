@@ -129,18 +129,21 @@ make run-prod
 
 ## Estrutura do Projeto
 
+```
 .
-├── cmd/app/ # Ponto de entrada da aplicação
-├── internal/ # Código interno da aplicação
-│ ├── entity/ # Entidades de domínio
-│ ├── infra/ # Infraestrutura da aplicação
-│ │ ├── api/ # APIs da aplicação
-│ │ │ └── handler/ # Handlers HTTP
-│ │ └── service/ # Serviços para APIs externas
-│ ├── usecase/ # Casos de uso da aplicação
-│ └── dto/ # Data Transfer Objects
+├── cmd/app/        # Ponto de entrada da aplicação
+├── internal/       # Código interno da aplicação
+│ ├── entity/       # Entidades de domínio
+│ ├── infra/        # Infraestrutura da aplicação
+│ │ ├── api/        # APIs da aplicação
+│ │ │ └── handler/  # Handlers HTTP
+│ │ └── service/    # Serviços para APIs externas
+│ ├── usecase/      # Casos de uso da aplicação
+│ └── dto/          # Data Transfer Objects
 ├── Dockerfile.prod # Configuração do container para produção
-└── Dockerfile # Configuração do container para desenvolvimento
+└── Dockerfile      # Configuração do container para desenvolvimento
+```
+
 
 ## Rotas da API
 
@@ -168,3 +171,9 @@ make run-prod
 - 200: success
 - 404: zipcode not found
 - 422: invalid zipcode
+
+### Google Cloud Run
+
+Uma instância da aplicação estará disponível em um serviço no Google Cloud Run durante o período de avaliação deste laboratório pela equipe de avaliação da FullCycle.
+
+Este serviço pode ser acessado em: https://lab1-cloudrun-613524590886.us-central1.run.app
