@@ -1,0 +1,42 @@
+// Requisição POST para buscar informações de um CEP válido
+POST http://localhost:8080/cep
+Content-Type: application/json
+
+{
+    "cep": "89802250"
+}
+
+###
+
+// Requisição POST para buscar informações de um CEP válido
+POST http://localhost:8080/cep
+Content-Type: application/json
+
+{
+    "cep": 89802250
+}
+
+###
+
+// Requisição POST para buscar informações de um CEP inválido (não existe)
+POST http://localhost:8080/cep
+Content-Type: application/json
+
+{
+    "cep": "89802999"
+}
+
+###
+
+// Requisição POST para buscar informações de um CEP com formato inválido (menos de 8 dígitos)
+POST http://localhost:8080/cep
+Content-Type: application/json
+
+{
+    "cep": "89802"
+}
+
+###
+
+// Requisição GET para buscar informações de um CEP específico no service-b (Não deve estar acessível)
+GET http://localhost:8181/cep/89802250

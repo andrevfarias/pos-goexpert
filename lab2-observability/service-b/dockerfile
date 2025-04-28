@@ -1,0 +1,19 @@
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates
+
+COPY . /app
+
+RUN go build -o service-b /app/cmd/main.go
+
+FROM scratch AS runner
+
+WORKDIR /app
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY --from=builder /app/service-b /app/service-b
+
+ENTRYPOINT ["/app/service-b"]

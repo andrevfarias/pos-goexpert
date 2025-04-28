@@ -1,0 +1,18 @@
+FROM golang:1.24-alpine
+
+WORKDIR /app
+
+# Install development tools
+RUN apk add --no-cache gcc musl-dev git curl
+
+# Install Air for hot reloading
+RUN go install github.com/air-verse/air@latest
+
+# We'll mount the app directory as a volume, so we don't need to copy files here
+
+# Baixa todas as dependências. They will be cached if go.mod and go.sum don't change
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Use air for hot reload in development
+CMD ["air", "-c", ".air.toml"] 
