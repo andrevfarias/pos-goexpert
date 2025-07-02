@@ -11,6 +11,20 @@ services:
     networks:
       - localNetwork
 
+  dev:
+    image: golang:1.20
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file:
+      - cmd/auction/.env
+    networks:
+      - localNetwork
+    depends_on:
+      - mongodb
+    profiles:
+      - development
+
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -29,4 +43,5 @@ volumes:
 
 networks:
   localNetwork:
+    name: auction-network
     driver: bridge
