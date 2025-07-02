@@ -2,16 +2,16 @@ package bid
 
 import (
 	"context"
-	"fullcycle-auction_go/configuration/logger"
-	"fullcycle-auction_go/internal/entity/auction_entity"
-	"fullcycle-auction_go/internal/entity/bid_entity"
-	"fullcycle-auction_go/internal/infra/database/auction"
-	"fullcycle-auction_go/internal/internal_error"
 	"os"
 	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/andrevfarias/go-expert/lab3-auction/configuration/logger"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/entity/auction_entity"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/entity/bid_entity"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/internal_error"
 )
 
 type BidEntityMongo struct {
@@ -24,7 +24,7 @@ type BidEntityMongo struct {
 
 type BidRepository struct {
 	Collection            *mongo.Collection
-	AuctionRepository     *auction.AuctionRepository
+	AuctionRepository     auction_entity.AuctionRepositoryInterface
 	auctionInterval       time.Duration
 	auctionStatusMap      map[string]auction_entity.AuctionStatus
 	auctionEndTimeMap     map[string]time.Time
@@ -32,7 +32,7 @@ type BidRepository struct {
 	auctionEndTimeMutex   *sync.Mutex
 }
 
-func NewBidRepository(database *mongo.Database, auctionRepository *auction.AuctionRepository) *BidRepository {
+func NewBidRepository(database *mongo.Database, auctionRepository auction_entity.AuctionRepositoryInterface) *BidRepository {
 	return &BidRepository{
 		auctionInterval:       getAuctionInterval(),
 		auctionStatusMap:      make(map[string]auction_entity.AuctionStatus),

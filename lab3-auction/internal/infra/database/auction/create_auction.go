@@ -4,14 +4,13 @@ import (
 	"context"
 	"os"
 	"time"
-	"log"
-	
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/bson"
 
-	"fullcycle-auction_go/configuration/logger"
-	"fullcycle-auction_go/internal/entity/auction_entity"
-	"fullcycle-auction_go/internal/internal_error"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/andrevfarias/go-expert/lab3-auction/configuration/logger"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/entity/auction_entity"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/internal_error"
 )
 
 type AuctionEntityMongo struct {
@@ -27,7 +26,7 @@ type AuctionRepository struct {
 	Collection *mongo.Collection
 }
 
-func NewAuctionRepository(database *mongo.Database) *AuctionRepository {
+func NewAuctionRepository(database *mongo.Database) auction_entity.AuctionRepositoryInterface {
 	return &AuctionRepository{
 		Collection: database.Collection("auctions"),
 	}
@@ -52,18 +51,15 @@ func (ar *AuctionRepository) CreateAuction(
 	}
 
 	go func() {
-		log.Println("Auction created", auctionEntity.Id)
-		select {
-		case <- time.After(getAuctionInterval()):
-			update := bson.M{"$set": bson.M{"status": auction_entity.Completed}}
-			filter := bson.M{"_id": auctionEntity.Id}
-			
-			_, err := ar.Collection.UpdateOne(ctx, filter, update)
-			if err != nil {
-				logger.Error("Error trying to close auction", err)
-				return
-			}
-			log.Println("Auction closed", auctionEntity.Id)
+		<-time.After(getAuctionInterval())
+
+		update := bson.M{"$set": bson.M{"status": auction_entity.Completed}}
+		filter := bson.M{"_id": auctionEntity.Id}
+
+		_, err := ar.Collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			logger.Error("Error trying to close auction", err)
+			return
 		}
 	}()
 

@@ -3,12 +3,14 @@ package bid
 import (
 	"context"
 	"fmt"
-	"fullcycle-auction_go/configuration/logger"
-	"fullcycle-auction_go/internal/entity/bid_entity"
-	"fullcycle-auction_go/internal/internal_error"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
+
+	"github.com/andrevfarias/go-expert/lab3-auction/configuration/logger"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/entity/bid_entity"
+	"github.com/andrevfarias/go-expert/lab3-auction/internal/internal_error"
 )
 
 func (bd *BidRepository) FindBidByAuctionId(
